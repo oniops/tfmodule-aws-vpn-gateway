@@ -7,7 +7,7 @@ variable "create_cgw" {
   default = true
 }
 
-variable "cgw_name" {
+variable "gateway_name" {
   description = "The name of customer gateway"
   type        = string
 }
@@ -93,7 +93,7 @@ variable "tunnel1_phase1_dh_group_numbers" {
 List of one or more Diffie-Hellman group numbers that are permitted for the first VPN tunnel for phase 1 IKE negotiations.
   Valid values are 2 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24.
 EOF
-  type        = string
+  type        = list(string)
   default     = null
 }
 
@@ -102,7 +102,7 @@ variable "tunnel1_phase1_encryption_algorithms" {
 List of one or more encryption algorithms that are permitted for the first VPN tunnel for phase 1 IKE negotiations.
 Valid values are AES128 | AES256 | AES128-GCM-16 | AES256-GCM-16.
 EOF
-  type        = string
+  type        = list(string)
   default     = null
 }
 
@@ -111,7 +111,7 @@ variable "tunnel1_phase1_integrity_algorithms" {
 One or more integrity algorithms that are permitted for the first VPN tunnel for phase 1 IKE negotiations.
 Valid values are SHA1 | SHA2-256 | SHA2-384 | SHA2-512.
 EOF
-  type        = string
+  type        = list(string)
   default     = null
 }
 
@@ -126,7 +126,7 @@ variable "tunnel1_phase2_dh_group_numbers" {
 List of one or more Diffie-Hellman group numbers that are permitted for the first VPN tunnel for phase 2 IKE negotiations.
   Valid values are 2 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24.
 EOF
-  type        = string
+  type        = list(string)
   default     = null
 }
 
@@ -135,7 +135,7 @@ variable "tunnel1_phase2_encryption_algorithms" {
 List of one or more encryption algorithms that are permitted for the first VPN tunnel for phase 2 IKE negotiations.
 Valid values are AES128 | AES256 | AES128-GCM-16 | AES256-GCM-16.
 EOF
-  type        = string
+  type        = list(string)
   default     = null
 }
 
@@ -144,7 +144,7 @@ variable "tunnel1_phase2_integrity_algorithms" {
 List of one or more integrity algorithms that are permitted for the first VPN tunnel for phase 2 IKE negotiations.
 Valid values are SHA1 | SHA2-256 | SHA2-384 | SHA2-512.
 EOF
-  type        = string
+  type        = list(string)
   default     = null
 }
 
@@ -226,7 +226,7 @@ variable "tunnel2_phase2_encryption_algorithms" {
 List of one or more encryption algorithms that are permitted for the second VPN tunnel for phase 2 IKE negotiations.
 Valid values are AES128 | AES256 | AES128-GCM-16 | AES256-GCM-16.
 EOF
-  type        = string
+  type        = list(string)
   default     = null
 }
 
@@ -254,15 +254,23 @@ variable "destination_cidr_block" {
 
 # connect to vgw
 variable "vpn_gateway_id" {
-  description = "The ID of the Virtual Private Gateway."
+  description = <<EOF
+The ID of the Virtual Private Gateway.
+
+if not exists vpn_gateway:
+  vpn_gateway_id = ""
+EOF
   type        = string
-  default     = null
 }
 
 variable "transit_gateway_id" {
-  description = "The ID of the EC2 Transit Gateway."
+  description = <<EOF
+  The ID of the EC2 Transit Gateway.
+
+if not exists ec2_transit_gateway_gateway:
+  transit_gateway_id = ""
+EOF
   type        = string
-  default     = null
 }
 
 variable "transport_transit_gateway_attachment_id" {

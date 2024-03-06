@@ -4,12 +4,16 @@ locals {
   tags        = var.context.tags
 
   create_cgw          = var.create_cgw
-  cgw_name            = format("%s-%s-cgw", local.name_prefix, var.cgw_name)
+  cgw_name            = format("%s-%s-cgw", local.name_prefix, var.gateway_name)
   cgw_connection_name = format("%s-conn", local.cgw_name)
 
   transport_transit_gateway_attachment_id = var.outside_ip_address_type == "PrivateIpv4" ? var.outside_ip_address_type : var.transport_transit_gateway_attachment_id
-  connect_to_vgw                          = local.create_cgw && var.vpn_gateway_id != null ? true : false
-  connect_to_tgw                          = local.create_cgw && var.transit_gateway_attachment_id != null && var.transit_gateway_route_table_id != null? true : false
+
+  vpn_gateway_id     = length(var.vpn_gateway_id) > 3 ? var.vpn_gateway_id : null
+  transit_gateway_id = length(var.vpn_gateway_id) > 3 ? null : var.transit_gateway_id
+  #
+  connect_to_vgw     = local.create_cgw && local.vpn_gateway_id != null ? true : false
+  connect_to_tgw     = local.create_cgw && local.transit_gateway_id != null ? true : false
 }
 
 resource "aws_customer_gateway" "this" {
@@ -30,14 +34,7 @@ resource "aws_vpn_connection" "this" {
   type                     = aws_customer_gateway.this[0].type
   outside_ip_address_type  = var.outside_ip_address_type
   remote_ipv4_network_cidr = var.remote_ipv4_network_cidr
-
-  # for VGW
-  vpn_gateway_id     = var.vpn_gateway_id
-  static_routes_only = var.static_routes_only
-
-  # for TGW
-  transit_gateway_id                      = var.transit_gateway_id
-  transport_transit_gateway_attachment_id = local.transport_transit_gateway_attachment_id
+  static_routes_only       = var.static_routes_only
 
   # Tunnel 1
   tunnel1_inside_cidr                  = var.tunnel1_inside_cidr
@@ -66,6 +63,14 @@ resource "aws_vpn_connection" "this" {
   tunnel2_phase2_encryption_algorithms = var.tunnel1_phase2_encryption_algorithms
   tunnel2_phase2_integrity_algorithms  = var.tunnel1_phase2_integrity_algorithms
   tunnel2_phase2_lifetime_seconds      = var.tunnel1_phase2_lifetime_seconds
+
+  # VPC Gateway
+  # for VGW
+  vpn_gateway_id                          = local.vpn_gateway_id
+  #
+  # for TGW
+  transit_gateway_id                      = local.transit_gateway_id
+  transport_transit_gateway_attachment_id = local.transport_transit_gateway_attachment_id
 
   tags = merge(    local.tags, {
     Name = local.cgw_connection_name
