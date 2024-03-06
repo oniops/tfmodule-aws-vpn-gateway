@@ -89,7 +89,7 @@ resource "aws_vpn_connection" "this" {
 }
 
 resource "aws_vpn_connection_route" "vgw" {
-  count                  = local.connect_to_vgw  ?  1 : 0
+  count                  = local.connect_to_vgw && var.static_routes_only ?  1 : 0
   vpn_connection_id      = aws_vpn_connection.this[0].id
   destination_cidr_block = var.destination_cidr_block
 }
