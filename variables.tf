@@ -246,11 +246,22 @@ variable "tunnel2_phase2_lifetime_seconds" {
 }
 
 # connect to vgw
-variable "destination_cidr_block" {
-  description = "Whether the VPN connection uses static routes exclusively. Static routes must be used for devices that don't support BGP."
-  type        = string
-}
+#  variable "destination_cidr_block" {
+#    description = "Whether the VPN connection uses static routes exclusively. Static routes must be used for devices that don't support BGP."
+#    type        = string
+#  }
 
+# connect to vgw
+variable "static_routes_destinations" {
+  description = <<EOF
+Whether the VPN connection uses static routes exclusively. Static routes must be used for devices that don't support BGP.
+
+Ex)
+  static_routes_destinations = ["10.100.0.1/32", "10.200.0.1/32"]
+EOF
+  type        = list(string)
+  default = []
+}
 
 # connect to vgw
 variable "vpn_gateway_id" {

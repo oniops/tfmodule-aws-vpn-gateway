@@ -14,6 +14,8 @@ locals {
   #
   connect_to_vgw     = local.create_cgw && local.vpn_gateway_id != null ? true : false
   connect_to_tgw     = local.create_cgw && local.transit_gateway_id != null ? true : false
+
+  static_routes_count = var.static_routes_only ? length(var.static_routes_destinations) : 0
 }
 
 resource "aws_customer_gateway" "this" {
@@ -89,9 +91,9 @@ resource "aws_vpn_connection" "this" {
 }
 
 resource "aws_vpn_connection_route" "vgw" {
-  count                  = local.connect_to_vgw && var.static_routes_only ?  1 : 0
+  count                  = local.connect_to_vgw && local.static_routes_count > 0 ?  local.static_routes_count : 0
   vpn_connection_id      = aws_vpn_connection.this[0].id
-  destination_cidr_block = var.destination_cidr_block
+  destination_cidr_block = var.static_routes_destinations[count.index]
 }
 
 /*
