@@ -18,13 +18,14 @@ locals {
 }
 
 module "vgw" {
-  source                 = "git::https://code.bespinglobal.com/scm/op/tfmodule-aws-vpn-gateway.git"
-  context                = local.context
-  gateway_name           = "vnf13"
-  ip_address             = "58.151.93.2"
-  destination_cidr_block = "10.30.246.0/24"
-  vpn_gateway_id         = "vgw-xxxsdfsfd" # Set this value when connecting to VGW.
-  transit_gateway_id     = ""              # Set this value when connecting to TGW.
+  source                     = "git::https://code.bespinglobal.com/scm/op/tfmodule-aws-vpn-gateway.git"
+  context                    = local.context
+  gateway_name               = "vnf13"
+  ip_address                 = "58.150.101.10"
+  static_routes_only         = true
+  static_routes_destinations = ["10.30.76.0/24", "10.30.76.1/24"]
+  vpn_gateway_id             = "vgw-xxxsdfsfd" # Set this value when connecting to VGW.
+  transit_gateway_id         = ""              # Set this value when connecting to TGW.
 }
 
 ```
