@@ -16,6 +16,7 @@ locals {
   connect_to_tgw     = local.create_cgw && local.transit_gateway_id != null ? true : false
 
   static_routes_count = var.static_routes_only ? length(var.static_routes_destinations) : 0
+
 }
 
 resource "aws_customer_gateway" "this" {
