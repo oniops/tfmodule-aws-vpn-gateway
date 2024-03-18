@@ -12,7 +12,7 @@ locals {
   vpn_gateway_id     = length(var.vpn_gateway_id) > 3 ? var.vpn_gateway_id : null
   transit_gateway_id = length(var.vpn_gateway_id) > 3 ? null : var.transit_gateway_id
   #
-  connect_to_vgw     = local.create_cgw && local.vpn_gateway_id != null ? true : false
+  connect_to_vgw     = local.create_cgw && (var.connect_to_vgw || local.vpn_gateway_id != null) ? true : false
   connect_to_tgw     = local.create_cgw && local.transit_gateway_id != null ? true : false
 
   static_routes_count = var.static_routes_only ? length(var.static_routes_destinations) : 0

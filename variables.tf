@@ -313,6 +313,11 @@ variable "replace_existing_association" {
   default     = false
 }
 
+variable "connect_to_vgw" {
+  type    = bool
+  default = false
+}
+
 #variable "amazon_side_asn" {
 #  description = "The gateway's Border Gateway Protocol (BGP) Autonomous System Number (ASN) of Amazon side."
 #  type        = string
