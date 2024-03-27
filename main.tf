@@ -9,13 +9,15 @@ locals {
 
   transport_transit_gateway_attachment_id = var.outside_ip_address_type == "PrivateIpv4" ? var.outside_ip_address_type : var.transport_transit_gateway_attachment_id
 
-  vpn_gateway_id     = var.vpn_gateway_id
-  transit_gateway_id = var.transit_gateway_id
+  vpn_gateway_id     = length(var.vpn_gateway_id) > 3 ? var.vpn_gateway_id : null
+  transit_gateway_id = length(var.vpn_gateway_id) > 3 ? null : var.transit_gateway_id
   #
-  connect_to_vgw     = local.create_cgw && local.transit_gateway_id == null ? true : false
-  connect_to_tgw     = local.create_cgw && local.vpn_gateway_id == null ? true : false
+  connect_to_vgw     = local.create_cgw && local.vpn_gateway_id != null ? true : false
+  connect_to_tgw     = local.create_cgw && local.transit_gateway_id != null ? true : false
 
   static_routes_count = var.static_routes_only ? length(var.static_routes_destinations) : 0
+
+  enable_cloudwatch_log_group = var.enable_log_tunnel1 || var.enable_log_tunnel2
 }
 
 resource "aws_customer_gateway" "this" {
@@ -52,6 +54,17 @@ resource "aws_vpn_connection" "this" {
   tunnel1_phase2_integrity_algorithms  = var.tunnel1_phase2_integrity_algorithms
   tunnel1_phase2_lifetime_seconds      = var.tunnel1_phase2_lifetime_seconds
 
+  dynamic "tunnel1_log_options" {
+    for_each = var.enable_log_tunnel1 ? [true] : []
+    content {
+      cloudwatch_log_options {
+        log_enabled       = var.enable_log_tunnel1
+        log_group_arn     = try(aws_cloudwatch_log_group.this[0].arn, "")
+        log_output_format = var.cloudwatch_log_format
+      }
+    }
+  }
+
   # Tunnel 2
   tunnel2_inside_cidr                  = var.tunnel1_inside_cidr
   tunnel2_startup_action               = var.tunnel1_startup_action
@@ -65,6 +78,17 @@ resource "aws_vpn_connection" "this" {
   tunnel2_phase2_encryption_algorithms = var.tunnel1_phase2_encryption_algorithms
   tunnel2_phase2_integrity_algorithms  = var.tunnel1_phase2_integrity_algorithms
   tunnel2_phase2_lifetime_seconds      = var.tunnel1_phase2_lifetime_seconds
+
+  dynamic "tunnel2_log_options" {
+    for_each = var.enable_log_tunnel2 ? [true] : []
+    content {
+      cloudwatch_log_options {
+        log_enabled       = var.enable_log_tunnel2
+        log_group_arn     = try(aws_cloudwatch_log_group.this[0].arn, "")
+        log_output_format = var.cloudwatch_log_format
+      }
+    }
+  }
 
   # VPC Gateway
   # for VGW

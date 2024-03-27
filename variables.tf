@@ -287,6 +287,7 @@ if not exists ec2_transit_gateway_gateway:
   transit_gateway_id = ""
 EOF
   type        = string
+  default     = null
 }
 
 variable "transport_transit_gateway_attachment_id" {
@@ -311,6 +312,36 @@ variable "replace_existing_association" {
   description = "Whether the Gateway Attachment should remove any current Route Table association before associating with the specified Route Table."
   type        = bool
   default     = false
+}
+
+variable "enable_log_tunnel1" {
+  description = "Sending VPN tunnel 1 logs to CloudWatch."
+  type        = bool
+  default     = false
+}
+
+variable "enable_log_tunnel2" {
+  description = "Sending VPN tunnel 2 logs to CloudWatch."
+  type        = bool
+  default     = false
+}
+
+variable "cloudwatch_log_group_name" {
+  description = "The name of the CloudWatch log group to send logs to."
+  type        = string
+  default     = null
+}
+
+variable "retention_in_days" {
+  description = "cloudwatch log group retention_in_days"
+  type        = number
+  default     = 90
+}
+
+variable "cloudwatch_log_format" {
+  description = "Set log format. Default format is json. Possible values are: json and text."
+  type        = string
+  default     = "json"
 }
 
 #variable "amazon_side_asn" {
