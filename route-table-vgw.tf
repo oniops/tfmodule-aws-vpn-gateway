@@ -9,7 +9,7 @@ locals {
     ]
   ]))
 
-  vgw_route_table_cnt = local.connect_to_vgw && local.static_routes_count > 0 && length(var.route_table_ids) > 0 ? length(local.vgw_route_tables) : 0
+  vgw_route_table_cnt = var.create_cgw && local.static_routes_count > 0 && length(var.route_table_ids) > 0 ? length(local.vgw_route_tables) : 0
 }
 
 resource "aws_route" "vgw" {

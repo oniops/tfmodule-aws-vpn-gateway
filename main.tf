@@ -1,44 +1,41 @@
 locals {
-  name_prefix = var.context.name_prefix
-  region      = var.context.region
-  tags        = var.context.tags
-
+  name_prefix         = var.context.name_prefix
+  region              = var.context.region
+  tags                = var.context.tags
   create_cgw          = var.create_cgw
-  cgw_name            = format("%s-%s-cgw", local.name_prefix, var.gateway_name)
-  cgw_connection_name = format("%s-conn", local.cgw_name)
+  cgw_name            = "${local.name_prefix}-${var.gateway_name}-cgw"
+  cgw_connection_name = "${local.cgw_name}-conn"
 
-  transport_transit_gateway_attachment_id = var.outside_ip_address_type == "PrivateIpv4" ? var.outside_ip_address_type : var.transport_transit_gateway_attachment_id
+  transport_transit_gateway_attachment_id = (var.outside_ip_address_type == "PrivateIpv4" ? var.outside_ip_address_type :
+    var.transport_transit_gateway_attachment_id)
 
-  vpn_gateway_id     = length(var.vpn_gateway_id) > 3 ? var.vpn_gateway_id : null
-  transit_gateway_id = length(var.vpn_gateway_id) > 3 ? null : var.transit_gateway_id
-  #
-  connect_to_vgw     = local.create_cgw && local.vpn_gateway_id != null ? true : false
-  connect_to_tgw     = local.create_cgw && local.transit_gateway_id != null ? true : false
-
-  static_routes_count = var.static_routes_only ? length(var.static_routes_destinations) : 0
-
+  vpn_gateway_id              = length(var.vpn_gateway_id) > 3 ? var.vpn_gateway_id : null
+  transit_gateway_id          = length(var.vpn_gateway_id) > 3 ? null : var.transit_gateway_id
+  connect_to_vgw              = local.create_cgw && local.vpn_gateway_id != null ? true : false
+  connect_to_tgw              = local.create_cgw && local.transit_gateway_id != null ? true : false
+  static_routes_count         = var.static_routes_only ? length(var.static_routes_destinations) : 0
   enable_cloudwatch_log_group = var.enable_log_tunnel1 || var.enable_log_tunnel2
 }
 
 resource "aws_customer_gateway" "this" {
-  count           = local.create_cgw ?  1 : 0
+  count           = local.create_cgw ? 1 : 0
   bgp_asn         = var.bgp_asn
   ip_address      = var.ip_address
   type            = var.type
   certificate_arn = var.certificate_arn
   device_name     = var.device_name
-  tags            = merge(local.tags, {
+  tags = merge(local.tags, {
     Name = local.cgw_name
   })
 }
 
 resource "aws_vpn_connection" "this" {
-  count                    = local.create_cgw ?  1 : 0
+  count                    = local.create_cgw ? 1 : 0
   customer_gateway_id      = aws_customer_gateway.this[0].id
   type                     = aws_customer_gateway.this[0].type
   outside_ip_address_type  = var.outside_ip_address_type
   remote_ipv4_network_cidr = var.remote_ipv4_network_cidr
-  static_routes_only       = var.static_routes_only
+  static_routes_only = var.static_routes_only
 
   # Tunnel 1
   tunnel1_inside_cidr                  = var.tunnel1_inside_cidr
@@ -59,7 +56,7 @@ resource "aws_vpn_connection" "this" {
     content {
       cloudwatch_log_options {
         log_enabled       = var.enable_log_tunnel1
-        log_group_arn     = try(aws_cloudwatch_log_group.this[0].arn, "")
+        log_group_arn = try(aws_cloudwatch_log_group.this[0].arn, "")
         log_output_format = var.cloudwatch_log_format
       }
     }
@@ -84,7 +81,7 @@ resource "aws_vpn_connection" "this" {
     content {
       cloudwatch_log_options {
         log_enabled       = var.enable_log_tunnel2
-        log_group_arn     = try(aws_cloudwatch_log_group.this[0].arn, "")
+        log_group_arn = try(aws_cloudwatch_log_group.this[0].arn, "")
         log_output_format = var.cloudwatch_log_format
       }
     }
@@ -98,7 +95,7 @@ resource "aws_vpn_connection" "this" {
   transit_gateway_id                      = local.transit_gateway_id
   transport_transit_gateway_attachment_id = local.transport_transit_gateway_attachment_id
 
-  tags = merge(    local.tags, {
+  tags = merge(local.tags, {
     Name = local.cgw_connection_name
   })
 
@@ -115,7 +112,7 @@ resource "aws_vpn_connection" "this" {
 }
 
 resource "aws_vpn_connection_route" "vgw" {
-  count                  = local.connect_to_vgw && local.static_routes_count > 0 ?  local.static_routes_count : 0
+  count                  = local.connect_to_vgw && local.static_routes_count > 0 ? local.static_routes_count : 0
   vpn_connection_id      = aws_vpn_connection.this[0].id
   destination_cidr_block = var.static_routes_destinations[count.index]
 }

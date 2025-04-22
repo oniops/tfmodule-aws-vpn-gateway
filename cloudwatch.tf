@@ -1,6 +1,7 @@
 locals {
-  cloudwatch_log_group_name = var.cloudwatch_log_group_name != null ? var.cloudwatch_log_group_name : format("/aws/vpn/%s", local.cgw_connection_name)
+  cloudwatch_log_group_name = var.cloudwatch_log_group_name != null ? var.cloudwatch_log_group_name : "/aws/vpn${local.cgw_connection_name}"
 }
+
 resource "aws_cloudwatch_log_group" "this" {
   count             = local.create_cgw  && local.enable_cloudwatch_log_group ? 1 : 0
   name              = local.cloudwatch_log_group_name
