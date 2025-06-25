@@ -6,8 +6,7 @@ locals {
   cgw_name            = "${local.name_prefix}-${var.gateway_name}-cgw"
   cgw_connection_name = "${local.cgw_name}-conn"
 
-  transport_transit_gateway_attachment_id = (var.outside_ip_address_type == "PrivateIpv4" ? var.outside_ip_address_type :
-    var.transport_transit_gateway_attachment_id)
+  transport_transit_gateway_attachment_id = (var.outside_ip_address_type == "PrivateIpv4" ? var.outside_ip_address_type : var.transport_transit_gateway_attachment_id)
 
   vpn_gateway_id              = length(var.vpn_gateway_id) > 3 ? var.vpn_gateway_id : null
   transit_gateway_id          = length(var.vpn_gateway_id) > 3 ? null : var.transit_gateway_id
@@ -112,9 +111,9 @@ resource "aws_vpn_connection" "this" {
 }
 
 resource "aws_vpn_connection_route" "vgw" {
-  count                  = local.connect_to_vgw && local.static_routes_count > 0 ? local.static_routes_count : 0
+  for_each = toset(local.connect_to_vgw && local.static_routes_count > 0 ? var.static_routes_destinations : [])
   vpn_connection_id      = aws_vpn_connection.this[0].id
-  destination_cidr_block = var.static_routes_destinations[count.index]
+  destination_cidr_block = each.key
 }
 
 /*
