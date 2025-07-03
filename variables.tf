@@ -264,7 +264,7 @@ Set the routing table IDs for setting the static routing table.
 Ex)
   route_table_ids = ["rtb-04c0b1313", "rtb-04c0c87441445" ]
 EOF
-  type        = list(string)
+  type        = set(string)
   default     = []
 }
 
@@ -342,6 +342,12 @@ variable "cloudwatch_log_format" {
   description = "Set log format. Default format is json. Possible values are: json and text."
   type        = string
   default     = "json"
+}
+
+variable "enable_route_propagation" {
+  description = "Automatic route table propagation"
+  type        = bool
+  default     = true
 }
 
 #variable "amazon_side_asn" {
